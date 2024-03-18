@@ -3647,6 +3647,7 @@ void ApiWrap::sendMessage(MessageToSend &&message) {
 			sending.text);
 
 		MTPstring msgText(MTP_string(sending.text));
+		
 		auto flags = NewMessageFlags(peer);
 		auto sendFlags = MTPmessages_SendMessage::Flags(0);
 		auto mediaFlags = MTPmessages_SendMedia::Flags(0);

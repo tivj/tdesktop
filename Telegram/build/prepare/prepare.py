@@ -1551,6 +1551,10 @@ win:
     cmake --build . --config Release --parallel
     cmake --build . --config Debug --parallel
 """)
+stage('crypto++', """
+mac:
+    git clone https://github.com/weidai11/cryptopp.git
+""")
 # mac:
 #     git clone --recursive -b v21.9 https://github.com/protocolbuffers/protobuf
 #     cd protobuf
