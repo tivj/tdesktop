@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
 #include <QByteArray>
-#include "tg_local_lib/coder.h"
+#include "coder.h"
 #include "key_manager.h"
 
 namespace local {
