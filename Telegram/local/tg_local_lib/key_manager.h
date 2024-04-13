@@ -1,3 +1,4 @@
+
 #include <sqlite_orm/sqlite_orm.h>
 #include <string>
 #include <memory>
@@ -77,7 +78,6 @@ inline auto genDB(std::string path = PATH) {
         genMessagesToHideTable(),
         genCryptoMessagesTable());
 }
-
 class KeyManager {
   public:
     static KeyManager& getInstance();

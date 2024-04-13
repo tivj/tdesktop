@@ -38,5 +38,4 @@ QByteArray decryptMessage(size_t peer_id, size_t message_id, const QByteArray& c
 }  // namespace api
 
 std::string whyNoCurrentKey(size_t peer_id);
-
 }  // namespace local

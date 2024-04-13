@@ -41,4 +41,3 @@ PUBLIC
     desktop-app::external_openssl
     sqlite_orm::sqlite_orm
 )
-
