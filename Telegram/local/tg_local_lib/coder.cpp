@@ -34,7 +34,9 @@ bool rsa_2048::genKeys(QByteArray& public_key, QByteArray& private_key) {
     key_size = BIO_get_mem_data(bio, &key);
     private_key.resize(key_size);
     memcpy(private_key.data(), key, key_size);
-    return true;
+    BIO_free(bio);
+    RSA_free(rsa);
+    BN_free(bne);
 }
 
 bool rsa_2048::encryptPublic(const QByteArray& data, const QByteArray& key, QByteArray& encrypted) {
@@ -51,7 +53,7 @@ bool rsa_2048::encryptPublic(const QByteArray& data, const QByteArray& key, QByt
         RSA_PKCS1_PADDING);
     RSA_free(rsa);
     if (rsa_size == -1) {
-        return false;
+        std::cout << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
     }
     encrypted.resize(rsa_size);
     return true;
@@ -72,7 +74,7 @@ bool rsa_2048::decryptPrivate(
         RSA_PKCS1_PADDING);
     RSA_free(rsa);
     if (rsa_size == -1) {
-        return false;
+        std::cout << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
     }
     decrypted.resize(rsa_size);
     return true;
