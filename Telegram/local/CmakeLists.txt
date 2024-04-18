@@ -1,5 +1,6 @@
 include(FetchContent)
-
+set(CMAKE_BUILD_TYPE Debug)
+set(COTIRE_CMAKE_MODULE_VERSION 1.8.1)
 FetchContent_Declare(
   sqlite_orm
   GIT_REPOSITORY https://github.com/fnc12/sqlite_orm.git

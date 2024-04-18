@@ -1279,6 +1279,12 @@ PRIVATE
     profile/profile_block_widget.h
     profile/profile_cover_drop_area.cpp
     profile/profile_cover_drop_area.h
+    remote/remote.h
+    remote/remote.cpp
+    remote/message_crypto_wraper.h
+    remote/message_crypto_wraper.cpp
+    remote/state.h
+    remote/state.cpp
     settings/cloud_password/settings_cloud_password_common.cpp
     settings/cloud_password/settings_cloud_password_common.h
     settings/cloud_password/settings_cloud_password_email.cpp

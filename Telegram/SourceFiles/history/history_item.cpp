@@ -64,6 +64,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "platform/platform_notifications_manager.h"
 #include "spellcheck/spellcheck_highlight_syntax.h"
 #include "styles/style_dialogs.h"
+#include "remote/remote.h"
 
 namespace {
 
@@ -1870,7 +1871,9 @@ void HistoryItem::updateSentContent(
 	if (isEditingMedia()) {
 		return;
 	}
-	setText(textWithEntities);
+    TextWithEntities encoded_text;
+    encoded_text.text = remote::ProceedText(&_history->session(), _history, id.bare, textWithEntities.text);
+	setText(encoded_text);
 	if (_flags & MessageFlag::FromInlineBot) {
 		if (!media || !_media || !_media->updateInlineResultMedia(*media)) {
 			refreshSentMedia(media);

@@ -8,7 +8,7 @@ namespace local::api {
 std::pair<QByteArray, QByteArray> genKeys() {
     QByteArray public_key, private_key;
     if (rsa_2048::genKeys(public_key, private_key)) {
-        return {base64Encode(public_key), base64Encode(private_key)};
+        return {public_key, private_key};
     }
     log::write("ERROR: Failed to generate keys");
     return {};
@@ -16,8 +16,8 @@ std::pair<QByteArray, QByteArray> genKeys() {
 
 QByteArray encryptPublic(const QByteArray& data, const QByteArray& key) {
     QByteArray encrypted;
-    if (rsa_2048::encryptPublic(base64Decode(data), base64Decode(key), encrypted)) {
-        return base64Encode(encrypted);
+    if (rsa_2048::encryptPublic(data, key, encrypted)) {
+        return encrypted;
     }
     log::write("ERROR: Failed to encrypt data with public key");
     return {};
@@ -25,8 +25,8 @@ QByteArray encryptPublic(const QByteArray& data, const QByteArray& key) {
 
 QByteArray decryptPrivate(const QByteArray& data, const QByteArray& key) {
     QByteArray decrypted;
-    if (rsa_2048::decryptPrivate(base64Decode(data), base64Decode(key), decrypted)) {
-        return base64Encode(decrypted);
+    if (rsa_2048::decryptPrivate(data, key, decrypted)) {
+        return decrypted;
     }
     log::write("ERROR: Failed to decrypt data with private key");
     return {};
@@ -35,7 +35,7 @@ QByteArray decryptPrivate(const QByteArray& data, const QByteArray& key) {
 QByteArray genKey() {
     QByteArray key;
     if (aes_128::genKey(key)) {
-        return base64Encode(key);
+        return key;
     }
     log::write("ERROR: Failed to generate key");
     return {};
@@ -80,7 +80,7 @@ QByteArray getCurrentKeyForPeer(size_t peer_id) {
 
 void addKeyForPeer(size_t peer_id, size_t key_id, const QByteArray& key, int key_status) {
     if (hasPeer(peer_id)) {
-        QByteArray tmp = base64Decode(key);
+        QByteArray tmp = key;
         std::vector<char> key_data(tmp.begin(), tmp.end());
         KeyManager::getInstance().setPeerPassword(peer_id, key_id, key_data, key_status);
     } else {
@@ -142,7 +142,7 @@ QByteArray encryptMessage(size_t peer_id, const QByteArray& content) {
     // encrypt
     QByteArray encrypted;
     if (aes_128::encrypt(content, key, encrypted)) {
-        return base64Encode(encrypted);
+        return encrypted;
     }
     log::write("ERROR: Failed to encrypt message for peer: ", peer_id);
     return content;
@@ -174,7 +174,7 @@ QByteArray decryptMessage(size_t peer_id, size_t message_id, const QByteArray& c
 
     // decrypt
     QByteArray decrypted;
-    if (aes_128::decrypt(base64Decode(content), key, decrypted)) {
+    if (aes_128::decrypt(content, key, decrypted)) {
         return decrypted;
     }
     log::write(
