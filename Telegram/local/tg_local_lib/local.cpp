@@ -39,7 +39,7 @@ QByteArray decryptPrivate(const QByteArray& data, const QByteArray& key) {
 QByteArray genSessionKey() {
     QByteArray key;
     if (aes_128::genKey(key)) {
-        log::write("INFO: Session was generated");
+        log::write("INFO: Session key was generated");
         return key;
     }
     log::write("ERROR: Failed to generate session key");
