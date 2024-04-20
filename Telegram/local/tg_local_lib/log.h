@@ -1,25 +1,42 @@
-#include <fstream>
+#pragma once
 #include <chrono>
 #include <ctime>
+#include <fstream>
 
-#define FILENAME "local.log"
+#define LOG_PATH "local.log"
 
-namespace local {
+namespace local::log {
 
-namespace log {
+struct Log {
+  public:
+    static Log& getInstance() {
+        static Log instance;
+        return instance;
+    }
+
+    Log(Log const&) = delete;
+    void operator=(Log const&) = delete;
+
+    ~Log() { file_.close(); }
+
+    template<typename... Args>
+    void write(Args&&... args) {
+        if (file_.is_open()) {
+            (file_ << ... << std::forward<Args>(args));
+        }
+    }
+
+  private:
+    Log() { file_.open(LOG_PATH); }
+    std::ofstream file_;
+};
 
 template<typename... Args>
 void write(Args&&... args) {
-    std::ofstream file(FILENAME);
-    if (file.is_open()) {
-        auto now = std::chrono::system_clock::now();
-        std::time_t time = std::chrono::system_clock::to_time_t(now);
-        file << std::ctime(&time);
-        (file << ... << std::forward<Args>(args));
-        file.close();
-    }
+    auto now = std::chrono::system_clock::now();
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    Log::getInstance().write(std::ctime(&time));
+    Log::getInstance().write(std::forward<Args>(args)..., '\n');
 }
 
-}  // namespace log
-
-}  // namespace local
+}  // namespace local::log

@@ -3,7 +3,6 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
-#include <openssl/err.h>
 
 namespace local {
 
@@ -53,7 +52,7 @@ bool rsa_2048::encryptPublic(const QByteArray& data, const QByteArray& key, QByt
         RSA_PKCS1_PADDING);
     RSA_free(rsa);
     if (rsa_size == -1) {
-        std::cout << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
+        return false;
     }
     encrypted.resize(rsa_size);
     return true;
@@ -74,7 +73,7 @@ bool rsa_2048::decryptPrivate(
         RSA_PKCS1_PADDING);
     RSA_free(rsa);
     if (rsa_size == -1) {
-        std::cout << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
+        return false;
     }
     decrypted.resize(rsa_size);
     return true;
