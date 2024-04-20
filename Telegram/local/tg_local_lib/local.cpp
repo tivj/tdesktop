@@ -36,7 +36,7 @@ QByteArray decryptPrivate(const QByteArray& data, const QByteArray& key) {
     return {};
 }
 
-QByteArray genKey() {
+QByteArray genSessionKey() {
     QByteArray key;
     if (aes_128::genKey(key)) {
         log::write("INFO: Session was generated");
@@ -77,6 +77,24 @@ size_t getCurrentKeyId(size_t peer_id) {
     return 0;
 }
 
+QByteArray getCurrentKey(size_t peer_id) {
+    auto key_vector = KeyManager::getInstance().getCurrentKeyForPeer(peer_id);
+    if (!key_vector.empty()) {
+        return QByteArray(reinterpret_cast<const char*>(key_vector.data()), key_vector.size());
+    }
+    log::write("ERROR: Failed to get current key for peer ", peer_id);
+    return {};
+}
+
+QByteArray getKey(size_t peer_id, size_t key_id) {
+    auto key_vector = KeyManager::getInstance().getKeyForPeer(peer_id, key_id);
+    if (!key_vector.empty()) {
+        return QByteArray(reinterpret_cast<const char*>(key_vector.data()), key_vector.size());
+    }
+    log::write("ERROR: Failed to get key with id ", key_id, " for peer ", peer_id);
+    return {};
+}
+
 void updateCurrentKey(size_t peer_id, size_t key_id, const QByteArray& key) {
     if (hasPeer(peer_id)) {
         std::vector<char> key_vector(key.begin(), key.end());
@@ -113,8 +131,8 @@ QByteArray encryptMessage(size_t peer_id, size_t message_id, const QByteArray& c
         return {};
     }
     if (status_of_ckey == 0) {
+        KeyManager::getInstance().setCryptoMessage(peer_id, message_id, ckey_id);
         if (KeyManager::getInstance().changeKeyStatus(peer_id, ckey_id, 1)) {
-            KeyManager::getInstance().setCryptoMessage(peer_id, message_id, ckey_id);
             log::write(
                 "INFO: Current key for peer with id ",
                 peer_id,
@@ -143,7 +161,11 @@ QByteArray encryptMessage(size_t peer_id, size_t message_id, const QByteArray& c
 }
 
 QByteArray decryptMessage(size_t peer_id, size_t message_id, const QByteArray& content) {
-    size_t first_crypto_message_id = KeyManager::getInstance().getFirstCryptoMessageId(peer_id);
+    if (!hasPeer(peer_id)) {
+        return content;
+    }
+    // TODO: Refactor this part
+    size_t first_crypto_message_id = KeyManager::getInstance().getFirstCryptoMessageId(peer_id);  //
     if (message_id < first_crypto_message_id) {
         return content;
     }

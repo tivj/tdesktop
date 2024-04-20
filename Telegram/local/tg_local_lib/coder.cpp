@@ -36,6 +36,7 @@ bool rsa_2048::genKeys(QByteArray& public_key, QByteArray& private_key) {
     BIO_free(bio);
     RSA_free(rsa);
     BN_free(bne);
+    return true;
 }
 
 bool rsa_2048::encryptPublic(const QByteArray& data, const QByteArray& key, QByteArray& encrypted) {

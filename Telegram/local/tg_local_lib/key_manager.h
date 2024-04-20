@@ -109,6 +109,7 @@ class KeyManager {
     std::optional<CryptoMessage> getCryptoMessage(size_t peer_id, size_t message_id);
     std::optional<size_t> getKeyIdForCryptoMessage(size_t peer_id, size_t message_id);
 
+    // TODO: Refactor this part
     std::vector<char> getKeyForCryptoMessage(size_t peer_id, size_t message_id);
 
     size_t getFirstCryptoMessageId(size_t peer_id);
