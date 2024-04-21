@@ -34,8 +34,8 @@ void KeyManager::setCurrentKeyId(size_t peer_id, size_t current_key_id) {
 bool KeyManager::hasPeer(size_t peer_id) { return getPeer(peer_id) != nullptr; }
 
 void KeyManager::setPeerPassword(
-    size_t peer_id, size_t key_index, const std::vector<char>& key, int key_status) {
-    db_.replace(PeerPassword{std::make_shared<size_t>(peer_id), key_index, key, key_status});
+    size_t peer_id, size_t key_id, const std::vector<char>& key, int key_status) {
+    db_.replace(PeerPassword{std::make_shared<size_t>(peer_id), key_id, key, key_status});
 }
 
 std::unique_ptr<PeerPassword> KeyManager::getPeerPassword(size_t peer_id, size_t key_id) {
@@ -68,26 +68,40 @@ bool KeyManager::changeKeyStatus(size_t peer_id, size_t key_id, int new_key_stat
     return false;
 }
 
+std::optional<int> KeyManager::getKeyStatus(size_t peer_id, size_t key_id) {
+    auto peer_password = getPeerPassword(peer_id, key_id);
+    if (peer_password) {
+        return peer_password->key_status;
+    }
+    return std::nullopt;
+}
+
 void KeyManager::setMessageToHide(size_t peer_id, size_t message_id) {
     db_.replace(MessageToHide{std::make_shared<size_t>(peer_id), message_id});
 }
 
-std::unique_ptr<MessageToHide> KeyManager::getMessageToHide(size_t message_id, size_t peer_id) {
+std::unique_ptr<MessageToHide> KeyManager::getMessageToHide(size_t peer_id, size_t message_id) {
     return db_.get_pointer<MessageToHide>(where(
-        c(&MessageToHide::message_id) == message_id and c(&MessageToHide::peer_id) == peer_id));
+        c(&MessageToHide::peer_id) == peer_id and c(&MessageToHide::message_id) == message_id));
 }
 
 bool KeyManager::hasMessageToHide(size_t peer_id, size_t message_id) {
-    return getMessageToHide(message_id, peer_id) != nullptr;
+    return getMessageToHide(peer_id, message_id) != nullptr;
 }
 
 void KeyManager::setCryptoMessage(size_t peer_id, size_t message_id, size_t key_id) {
     db_.replace(CryptoMessage{std::make_shared<size_t>(peer_id), message_id, key_id});
 }
 
-std::unique_ptr<CryptoMessage> KeyManager::getCryptoMessage(size_t peer_id, size_t message_id) {
-    return db_.get_pointer<CryptoMessage>(where(
-        c(&CryptoMessage::peer_id) == peer_id and c(&CryptoMessage::message_id) == message_id));
+std::optional<CryptoMessage> KeyManager::getCryptoMessage(size_t peer_id, size_t message_id) {
+    auto crypto_messages = db_.get_all<CryptoMessage>(
+        where(
+            c(&CryptoMessage::peer_id) == peer_id and c(&CryptoMessage::message_id) <= message_id),
+        order_by(&CryptoMessage::message_id).desc());
+    if (!crypto_messages.empty()) {
+        return crypto_messages.front();
+    }
+    return std::nullopt;
 }
 
 std::optional<size_t> KeyManager::getKeyIdForCryptoMessage(size_t peer_id, size_t message_id) {
@@ -104,6 +118,24 @@ std::vector<char> KeyManager::getKeyForCryptoMessage(size_t peer_id, size_t mess
         return getKeyForPeer(peer_id, crypto_message->key_id);
     }
     return {};
+}
+
+size_t KeyManager::getFirstCryptoMessageId(size_t peer_id) {
+    auto crypto_messages = db_.get_all<CryptoMessage>(
+        where(c(&CryptoMessage::peer_id) == peer_id), order_by(&CryptoMessage::message_id).asc());
+    if (!crypto_messages.empty()) {
+        return crypto_messages.front().message_id;
+    }
+    return 0;
+}
+
+size_t KeyManager::getLastCryptoMessageId(size_t peer_id) {
+    auto crypto_messages = db_.get_all<CryptoMessage>(
+        where(c(&CryptoMessage::peer_id) == peer_id), order_by(&CryptoMessage::message_id).desc());
+    if (!crypto_messages.empty()) {
+        return crypto_messages.front().message_id;
+    }
+    return 0;
 }
 
 KeyManager::KeyManager() { db_.sync_schema(); }
