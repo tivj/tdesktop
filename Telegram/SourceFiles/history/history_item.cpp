@@ -1872,7 +1872,7 @@ void HistoryItem::updateSentContent(
 		return;
 	}
     TextWithEntities encoded_text;
-    encoded_text.text = remote::ProceedText(&_history->session(), _history, id.bare, textWithEntities.text);
+    encoded_text.text = remote::ProceedText(_history->peer->id.value, id.bare, textWithEntities.text);
 	setText(encoded_text);
 	if (_flags & MessageFlag::FromInlineBot) {
 		if (!media || !_media || !_media->updateInlineResultMedia(*media)) {

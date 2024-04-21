@@ -2648,11 +2648,11 @@ HistoryItem *Session::addNewMessage(
 		const MTPMessage &data,
 		MessageFlags localFlags,
 		NewMessageType type) {
+	// QByteArray v = data.c_message().vmessage().v;
 	const auto peerId = PeerFromMessage(data);
 	if (!peerId) {
 		return nullptr;
 	}
-
 	const auto result = history(peerId)->addNewMessage(
 		id,
 		data,

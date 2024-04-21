@@ -13,17 +13,16 @@
 #include <history/history_widget.h>
 #include <main/session/send_as_peers.h>
 #include <apiwrap.h>
-QByteArray remote::HandShake(const not_null<Main::Session*> session, const not_null<History*> history, Api::SendAction &action) {
-    QByteArray start_msg = remote::MessageCryptoWraper::InitiateHandShake().toBase64();
+QByteArray remote::HandShake(size_t peer_id) {
+    QByteArray start_msg = remote::MessageCryptoWraper::InitiateHandShake(peer_id).toBase64();
     return start_msg;
 }
-QByteArray remote::SendSessionKey(PeerId peer_id) {
+QByteArray remote::SendSessionKey(size_t peer_id) {
     QByteArray session_msg = remote::MessageCryptoWraper::SendSessionKey(peer_id).toBase64();
     return session_msg;
 }
-QString remote::ProceedText(const not_null<Main::Session*> session, const not_null<History*> history, size_t message_id, const QString &text) {
+QString remote::ProceedText(size_t peer_id, size_t message_id, const QString &text) {
     ///Message is key:
-    PeerId peer_id = history->peer->id;
     QByteArray text_bytes = text.toUtf8();
     std::ofstream out("./my_log.txt", std::ios::app);
     out << "Proceed\n";
@@ -38,9 +37,17 @@ QString remote::ProceedText(const not_null<Main::Session*> session, const not_nu
     }
     out << "\n";
     if (!MessageCryptoWraper::IsMCW(text_bytes_64)) { ///Message is not key
-        QByteArray decrypted_text = local::api::decryptMessage(peer_id.value, message_id, QByteArray::fromBase64(text_bytes));
+        QByteArray decrypted_text = local::api::decryptMessage(peer_id, message_id, text_bytes_64);
+        if (decrypted_text == text_bytes_64 || decrypted_text.isEmpty()) {
+            return text;
+        }
         return decrypted_text;
     }
+    /*
+    if (peer_id == session->userId()) {
+        return QString();
+    }
+     */
     QByteArray bytes = text_bytes_64.sliced(10);
     out << "Base64(removed)\n";
     for (int i = 0; i < bytes.size(); ++i) {
@@ -103,18 +110,18 @@ void remote::SendRawHiddenText(not_null<Main::Session*> session, const not_null<
             (sendAs ? sendAs->input : MTP_inputPeerEmpty())
         ), done, fail);
 }
-QString remote::EncryptText(const not_null<Main::Session*> session, const not_null<History*> history, Api::SendAction &action, const QString &text) {
+QString remote::EncryptText(size_t peer_id, size_t message_id, const QString &text) {
     // remote::SendRawHiddenText(session, history, text);
     if (text == "Create key") {
-        return HandShake(session, history, action);
+        return HandShake(peer_id);
     }
-    PeerId peer_id = history->peer->id;
     if (text == "Send session") {
         return remote::SendSessionKey(peer_id);
     }
     QByteArray text_bytes = text.toUtf8();
-    if (local::api::hasPeer(peer_id.value)) {
-        QByteArray encrypted_text = local::api::encryptMessage(peer_id.value, text_bytes);
+    if (local::api::hasPeer(peer_id)) {
+        
+        QByteArray encrypted_text = local::api::encryptMessage(peer_id, message_id, text_bytes);
         return QString::fromUtf8(encrypted_text.toBase64());
     }
     return text_bytes;

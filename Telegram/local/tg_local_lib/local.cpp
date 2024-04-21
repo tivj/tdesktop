@@ -166,9 +166,11 @@ QByteArray decryptMessage(size_t peer_id, size_t message_id, const QByteArray& c
     }
     // TODO: Refactor this part
     size_t first_crypto_message_id = KeyManager::getInstance().getFirstCryptoMessageId(peer_id);  //
+    /*
     if (message_id < first_crypto_message_id) {
         return content;
     }
+     */
     size_t last_crypto_message_id = KeyManager::getInstance().getLastCryptoMessageId(peer_id);
     if (message_id > last_crypto_message_id) {
         size_t ckey_id = getCurrentKeyId(peer_id);

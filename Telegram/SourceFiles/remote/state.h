@@ -9,12 +9,15 @@ public:
         return remote_state;
     }
     void SetPublicKey(size_t peer_id, const QByteArray &key);
-    const QByteArray& GetKey(size_t peer_id) const;
-    QByteArray& GetKey(size_t peer_id);
+    void SetPrivateKey(size_t peer_id, const QByteArray &key);
+    const QByteArray& GetPublicKey(size_t peer_id) const;
+    QByteArray& GetPublicKey(size_t peer_id);
+    const QByteArray& GetPrivateKey(size_t peer_id) const;
+    QByteArray& GetPrivateKey(size_t peer_id);
 private:
     State() = default;
     State(const State&) = delete;
     State& operator=(const State&) = delete;
-    std::unordered_map<size_t, QByteArray> public_keys;
+    std::unordered_map<size_t, QByteArray> public_keys, private_keys;
 };
 }
