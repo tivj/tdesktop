@@ -40,6 +40,16 @@ QByteArray MessageCryptoWraper::SendSessionKey(size_t peer_id) {
 }
 QByteArray MessageCryptoWraper::ProceedInitiate(size_t peer_id) const {
     QByteArray session_key = local::api::genSessionKey();
+    {
+        std::ofstream out("./my_log.txt", std::ios::app);
+        QByteArray public_key = bytes_;
+        out << "Session Key\n";
+        for (int i = 0; i < session_key.size(); ++i) {
+            out << (int)session_key[i] << " ";
+        }
+        out << "\n";
+        out.close();
+    }
     if (!local::api::hasPeer(peer_id)) {
         local::api::addPeer(peer_id);
     }
@@ -64,7 +74,10 @@ QByteArray MessageCryptoWraper::ProceedSessionKey(size_t peer_id) const {
     const QByteArray &private_key = State::GetInstance().GetPrivateKey(peer_id);
     QByteArray session_key = local::api::decryptPrivate(bytes_, private_key);
     size_t key_id = local::api::getCurrentKeyId(peer_id);
-    // local::api::updateCurrentKey(peer_id.value, session_key);
+    if (!local::api::hasPeer(peer_id)) {
+        local::api::addPeer(peer_id);
+    }
+    local::api::updateCurrentKey(peer_id, session_key);
     QByteArray key_index_bytes;
     key_index_bytes.append(commands::key_index);
     key_index_bytes.append(key_id);

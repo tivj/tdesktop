@@ -1187,7 +1187,7 @@ void Updates::applyUpdatesNoPtsCheck(const MTPUpdates &updates) {
 void Updates::applyUpdateNoPtsCheck(const MTPUpdate &update) {
 	switch (update.type()) {
 	case mtpc_updateNewMessage: {
-		auto &d = update.c_updateNewMessage();
+        auto &d = update.c_updateNewMessage();
 		auto needToAdd = true;
 		if (d.vmessage().type() == mtpc_message) { // index forwarded messages to links _overview
 			const auto &data = d.vmessage().c_message();

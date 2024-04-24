@@ -27,7 +27,7 @@ struct Log {
     }
 
   private:
-    Log() { file_.open(LOG_PATH); }
+    Log() { file_.open(LOG_PATH, std::ios::app); }
     std::ofstream file_;
 };
 

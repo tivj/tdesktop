@@ -1868,7 +1868,7 @@ void HistoryItem::applySentMessage(
 void HistoryItem::updateSentContent(
 		const TextWithEntities &textWithEntities,
 		const MTPMessageMedia *media) {
-	if (isEditingMedia()) {
+	if (isEditingMedia()) {	
 		return;
 	}
     TextWithEntities encoded_text;
