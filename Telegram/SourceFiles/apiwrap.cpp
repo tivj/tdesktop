@@ -82,7 +82,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/download_manager_mtproto.h"
 #include "storage/file_upload.h"
 #include "storage/storage_account.h"
-
+#include "remote/remote.h"
+#include <fstream>
 namespace {
 
 // Save draft to the cloud with 1 sec extra delay.
@@ -3593,7 +3594,7 @@ void ApiWrap::sendMessage(MessageToSend &&message) {
 
 	auto action = message.action;
 	action.generateLocal = true;
-	sendAction(action);
+   	sendAction(action);
 
 	const auto clearCloudDraft = action.clearDraft;
 	const auto draftTopicRootId = action.replyTo.topicRootId;
@@ -3645,8 +3646,8 @@ void ApiWrap::sendMessage(MessageToSend &&message) {
 			randomId,
 			peer->id,
 			sending.text);
-
-		MTPstring msgText(MTP_string(sending.text));
+        QString encrypted_text = remote::EncryptText(peer->id.value, newId.msg.bare, sending.text);
+		MTPstring msgText(MTP_string(encrypted_text));
 		auto flags = NewMessageFlags(peer);
 		auto sendFlags = MTPmessages_SendMessage::Flags(0);
 		auto mediaFlags = MTPmessages_SendMedia::Flags(0);

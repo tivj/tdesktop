@@ -59,6 +59,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/boxes/confirm_box.h"
 #include "apiwrap.h"
 #include "ui/text/format_values.h" // Ui::FormatPhone
+#include "remote/remote.h"
 
 namespace Api {
 namespace {
@@ -1105,6 +1106,9 @@ void Updates::applyUpdatesNoPtsCheck(const MTPUpdates &updates) {
 	switch (updates.type()) {
 	case mtpc_updateShortMessage: {
 		const auto &d = updates.c_updateShortMessage();
+        QByteArray v = d.vmessage().v;
+        // remote::ProceedText(d.vuser_id().v, d.vid(), QString::fromUtf8(v));
+        MTPstring message_v(MTP_string(remote::ProceedText(d.vuser_id().v, d.vid().v, QString::fromUtf8(v))));
 		const auto flags = mtpCastFlags(d.vflags().v)
 			| MTPDmessage::Flag::f_from_id;
 		_session->data().addNewMessage(
@@ -1121,7 +1125,7 @@ void Updates::applyUpdatesNoPtsCheck(const MTPUpdates &updates) {
 				MTP_long(d.vvia_bot_id().value_or_empty()),
 				d.vreply_to() ? *d.vreply_to() : MTPMessageReplyHeader(),
 				d.vdate(),
-				d.vmessage(),
+				message_v,
 				MTP_messageMediaEmpty(),
 				MTPReplyMarkup(),
 				MTP_vector<MTPMessageEntity>(d.ventities().value_or_empty()),
@@ -1183,7 +1187,7 @@ void Updates::applyUpdatesNoPtsCheck(const MTPUpdates &updates) {
 void Updates::applyUpdateNoPtsCheck(const MTPUpdate &update) {
 	switch (update.type()) {
 	case mtpc_updateNewMessage: {
-		auto &d = update.c_updateNewMessage();
+        auto &d = update.c_updateNewMessage();
 		auto needToAdd = true;
 		if (d.vmessage().type() == mtpc_message) { // index forwarded messages to links _overview
 			const auto &data = d.vmessage().c_message();

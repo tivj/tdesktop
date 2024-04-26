@@ -2652,7 +2652,6 @@ HistoryItem *Session::addNewMessage(
 	if (!peerId) {
 		return nullptr;
 	}
-
 	const auto result = history(peerId)->addNewMessage(
 		id,
 		data,

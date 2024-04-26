@@ -1,10 +1,11 @@
-
+#pragma once
+#include <memory>
+#include <optional>
 #include <sqlite_orm/sqlite_orm.h>
 #include <string>
-#include <memory>
 #include <vector>
 
-#define PATH "."
+#define DB_PATH "keys.db"
 
 using namespace sqlite_orm;
 
@@ -70,9 +71,9 @@ inline auto genMessagesToHideTable() {
         foreign_key(&MessageToHide::peer_id).references(&Peer::peer_id));
 }
 
-inline auto genDB(std::string path = PATH) {
+inline auto genDB(std::string&& path = DB_PATH) {
     return make_storage(
-        path + "/keys.db",
+        path,
         genPeersTable(),
         genPeerPasswordsTable(),
         genMessagesToHideTable(),
@@ -98,16 +99,18 @@ class KeyManager {
     std::vector<char> getKeyForPeer(size_t peer_id, size_t key_id);
     std::vector<char> getCurrentKeyForPeer(size_t peer_id);
     bool changeKeyStatus(size_t peer_id, size_t key_id, int new_key_status);
+    std::optional<int> getKeyStatus(size_t peer_id, size_t key_id);
 
     void setMessageToHide(size_t peer_id, size_t message_id);
     std::unique_ptr<MessageToHide> getMessageToHide(size_t peer_id, size_t message_id);
     bool hasMessageToHide(size_t peer_id, size_t message_id);
 
     void setCryptoMessage(size_t peer_id, size_t message_id, size_t key_id);
-    std::unique_ptr<CryptoMessage> getCryptoMessage(size_t peer_id, size_t message_id);
+    std::optional<CryptoMessage> getCryptoMessage(size_t peer_id, size_t message_id);
     std::optional<size_t> getKeyIdForCryptoMessage(size_t peer_id, size_t message_id);
 
     std::vector<char> getKeyForCryptoMessage(size_t peer_id, size_t message_id);
+    size_t getLastCryptoMessageId(size_t peer_id);
 
     ~KeyManager() = default;
 
