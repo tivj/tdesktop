@@ -120,15 +120,6 @@ std::vector<char> KeyManager::getKeyForCryptoMessage(size_t peer_id, size_t mess
     return {};
 }
 
-size_t KeyManager::getFirstCryptoMessageId(size_t peer_id) {
-    auto crypto_messages = db_.get_all<CryptoMessage>(
-        where(c(&CryptoMessage::peer_id) == peer_id), order_by(&CryptoMessage::message_id).asc());
-    if (!crypto_messages.empty()) {
-        return crypto_messages.front().message_id;
-    }
-    return 0;
-}
-
 size_t KeyManager::getLastCryptoMessageId(size_t peer_id) {
     auto crypto_messages = db_.get_all<CryptoMessage>(
         where(c(&CryptoMessage::peer_id) == peer_id), order_by(&CryptoMessage::message_id).desc());
